@@ -18,6 +18,7 @@ spec:
       labels:
         {{- include "private-ai-deid.selectorLabels" . | nindent 8 }}
     spec:
+      {{- template "private-ai-deid.podScheduling" $ }}
       serviceAccountName: {{ .Values.serviceAccount.name}}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -26,11 +27,7 @@ spec:
       containers:
         - name: {{ .Chart.Name }}          
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          {{- if .Values.gpuEnabled }}
-          resources:
-            limits:
-              nvidia.com/gpu: 1
-          {{- end }}
+          {{- template "private-ai-deid.containerResources" $ }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http

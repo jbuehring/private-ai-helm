@@ -60,3 +60,35 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Renders pod scheduling behavior, for those behaviors that are present.
+*/}}
+{{- define "private-ai-deid.podScheduling" }}
+{{- if .Values.nodeSelector }}
+{{ print "nodeSelector:" | indent 6 }}
+{{- include "common.tplvalues.render" ( dict "value" .Values.nodeSelector "context" $ ) | nindent 8 }}
+{{- end }}
+{{- if .Values.affinity }}
+{{ print "affinity:" | indent 6 }}
+{{- include "common.tplvalues.render" ( dict "value" .Values.affinity "context" $ ) | nindent 8 }}
+{{- end }}
+{{- if .Values.tolerations }}
+{{ print "tolerations:" | indent 6 }}
+{{- include "common.tplvalues.render" ( dict "value" .Values.tolerations "context" $ ) | nindent 8 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Renders container resources, applying GPU-based limits if necessary.
+*/}}
+{{- define "private-ai-deid.containerResources" }}
+{{- $resources := .Values.resources }}
+{{- if .Values.gpuEnabled }}
+{{- $resources := merge $resources ( dict "limits" ( dict "nvidia.com/gpu" 1 ) ) }}
+{{- end }}
+{{- if $resources }}
+{{ print "resources:" | indent 10 }}
+{{- include "common.tplvalues.render" ( dict "value" $resources "context" $ ) | nindent 12 }}
+{{- end }}
+{{- end }}
